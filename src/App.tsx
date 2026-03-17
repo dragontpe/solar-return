@@ -34,8 +34,8 @@ function App() {
         />
       )}
       {screen === 'calculating' && <CalculatingScreen />}
-      {screen === 'result' && report && (
-        <ResultScreen report={report} onStartOver={handleStartOver} />
+      {screen === 'result' && report && srData && (
+        <ResultScreen report={report} srChart={srData.srChart} onStartOver={handleStartOver} />
       )}
     </div>
   );

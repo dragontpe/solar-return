@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import type { ReportData } from '../report/assembler';
+import type { ChartData } from '../engine/types';
 import { buildPDF } from '../pdf/generator';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
 
 interface Props {
   report: ReportData;
+  srChart: ChartData;
   onStartOver: () => void;
 }
 
-export function ResultScreen({ report, onStartOver }: Props) {
+export function ResultScreen({ report, srChart, onStartOver }: Props) {
   const [generating, setGenerating] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export function ResultScreen({ report, onStartOver }: Props) {
     setError('');
     setSaved(false);
     try {
-      const pdfBytes = await buildPDF(report);
+      const pdfBytes = await buildPDF(report, srChart);
       const defaultName = `SolarReturn_${report.name}_${report.returnYear}.pdf`;
       const path = await save({
         defaultPath: defaultName,
