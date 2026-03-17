@@ -98,13 +98,46 @@ export async function buildPDF(report: ReportData, srChart?: ChartData): Promise
     thickness: 1, color: COLORS.gold,
   });
 
-  // Footer
-  const footerText = 'Your personalised solar return report';
-  const footerWidth = helvetica.widthOfTextAtSize(footerText, 10);
-  cover.drawText(footerText, {
-    x: (PAGE_W - footerWidth) / 2, y: 40,
-    size: 10, font: helvetica, color: COLORS.grey,
-  });
+  // Noon chart notice on cover
+  if (report.noonChart) {
+    const noonText = 'Noon Chart \u2014 Birth Time Unknown';
+    const noonW = helveticaOblique.widthOfTextAtSize(noonText, 11);
+    cover.drawText(noonText, {
+      x: (PAGE_W - noonW) / 2, y: 560,
+      size: 11, font: helveticaOblique, color: COLORS.grey,
+    });
+  }
+
+  // Branding on cover
+  const { branding } = report;
+  if (branding.companyName) {
+    const cnW = helveticaBold.widthOfTextAtSize(branding.companyName, 12);
+    cover.drawText(branding.companyName, {
+      x: (PAGE_W - cnW) / 2, y: 80,
+      size: 12, font: helveticaBold, color: COLORS.purple,
+    });
+    if (branding.tagline) {
+      const tlW = helveticaOblique.widthOfTextAtSize(branding.tagline, 9);
+      cover.drawText(branding.tagline, {
+        x: (PAGE_W - tlW) / 2, y: 65,
+        size: 9, font: helveticaOblique, color: COLORS.grey,
+      });
+    }
+    if (branding.contact) {
+      const ctW = helvetica.widthOfTextAtSize(branding.contact, 8);
+      cover.drawText(branding.contact, {
+        x: (PAGE_W - ctW) / 2, y: 50,
+        size: 8, font: helvetica, color: COLORS.grey,
+      });
+    }
+  } else {
+    const footerText = 'Your personalised solar return report';
+    const footerWidth = helvetica.widthOfTextAtSize(footerText, 10);
+    cover.drawText(footerText, {
+      x: (PAGE_W - footerWidth) / 2, y: 40,
+      size: 10, font: helvetica, color: COLORS.grey,
+    });
+  }
 
   // ── Chart wheel page ──────────────────────────────────────────────────────
 

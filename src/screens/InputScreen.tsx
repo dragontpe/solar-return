@@ -4,19 +4,22 @@ import type { ReportData } from '../report/assembler';
 import { calculateSolarReturn } from '../engine/index';
 import { assembleReport } from '../report/assembler';
 import { CitySearch } from '../components/CitySearch';
+import type { Branding } from '../types/branding';
 
 interface Props {
   onCalculating: () => void;
-  onResult: (data: SolarReturnData, report: ReportData) => void;
+  onResult: (data: SolarReturnData, report: ReportData, noonChart: boolean) => void;
+  branding: Branding;
 }
 
-export function InputScreen({ onCalculating, onResult }: Props) {
+export function InputScreen({ onCalculating, onResult, branding }: Props) {
   const [name, setName] = useState('');
   const [birthYear, setBirthYear] = useState(1990);
   const [birthMonth, setBirthMonth] = useState(1);
   const [birthDay, setBirthDay] = useState(1);
   const [birthHour, setBirthHour] = useState(12);
   const [birthMinute, setBirthMinute] = useState(0);
+  const [unknownTime, setUnknownTime] = useState(false);
   const [birthCity, setBirthCity] = useState('');
   const [birthLat, setBirthLat] = useState(0);
   const [birthLon, setBirthLon] = useState(0);
@@ -32,7 +35,7 @@ export function InputScreen({ onCalculating, onResult }: Props) {
     setError('');
     onCalculating();
     try {
-      const hour = birthHour + birthMinute / 60;
+      const hour = unknownTime ? 12 : birthHour + birthMinute / 60;
       const srData = await calculateSolarReturn(
         {
           name,
@@ -52,8 +55,8 @@ export function InputScreen({ onCalculating, onResult }: Props) {
         },
         returnYear,
       );
-      const report = assembleReport(srData, name || 'Chart');
-      onResult(srData, report);
+      const report = assembleReport(srData, name || 'Chart', unknownTime, branding);
+      onResult(srData, report, unknownTime);
     } catch (e) {
       setError(String(e));
     }
@@ -82,16 +85,30 @@ export function InputScreen({ onCalculating, onResult }: Props) {
           <input type="number" min={1} max={31} value={birthDay} onChange={e => setBirthDay(+e.target.value)} />
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group">
-          <label>Hour (24h)</label>
-          <input type="number" min={0} max={23} value={birthHour} onChange={e => setBirthHour(+e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Minute</label>
-          <input type="number" min={0} max={59} value={birthMinute} onChange={e => setBirthMinute(+e.target.value)} />
-        </div>
+
+      <div className="form-row" style={{ alignItems: 'center' }}>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={unknownTime}
+            onChange={e => setUnknownTime(e.target.checked)}
+          />
+          Birth time unknown (noon chart)
+        </label>
       </div>
+
+      {!unknownTime && (
+        <div className="form-row">
+          <div className="form-group">
+            <label>Hour (24h)</label>
+            <input type="number" min={0} max={23} value={birthHour} onChange={e => setBirthHour(+e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Minute</label>
+            <input type="number" min={0} max={59} value={birthMinute} onChange={e => setBirthMinute(+e.target.value)} />
+          </div>
+        </div>
+      )}
 
       <CitySearch
         label="Birth City"

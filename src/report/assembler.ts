@@ -1,4 +1,5 @@
 import type { SolarReturnData } from '../engine/types';
+import type { Branding } from '../types/branding';
 import {
   SUN_IN_HOUSES, ASCENDANT_SIGNS, MC_SIGNS,
   MOON_IN_HOUSES, MOON_IN_SIGNS, MERCURY_IN_HOUSES,
@@ -32,6 +33,12 @@ export interface ReportData {
   srSunHouse: number;
   srMoonSign: string;
   srMoonHouse: number;
+
+  // Noon chart flag
+  noonChart: boolean;
+
+  // Branding
+  branding: Branding;
 
   // Report sections in order
   sections: ReportSection[];
@@ -74,34 +81,53 @@ function fallback(placement: string): string {
 
 // ── Main assembler ────────────────────────────────────────────────────────────
 
-export function assembleReport(data: SolarReturnData, personName: string): ReportData {
+export function assembleReport(
+  data: SolarReturnData,
+  personName: string,
+  noonChart = false,
+  branding: Branding = { companyName: '', tagline: '', contact: '' },
+): ReportData {
   const { srChart, srConjunctNatal, yearEvents, returnLocation, returnYear, returnDateLocal } = data;
   const sections: ReportSection[] = [];
 
   const getP = (name: string) => srChart.planets.find(p => p.name === name)!;
 
+  const NOON_CAVEAT = 'Note: This chart was calculated using a noon birth time because the exact birth time is unknown. House placements, the Ascendant, and the Midheaven should be considered approximate. The sign positions of the planets remain accurate.';
+
+  // ── Noon chart notice ─────────────────────────────────────────────────────
+  if (noonChart) {
+    sections.push({
+      heading: 'About This Chart',
+      subheading: 'Noon Chart — Birth Time Unknown',
+      body: NOON_CAVEAT,
+    });
+  }
+
   // ── Section 1: Ascendant ───────────────────────────────────────────────────
   const ascSign = srChart.houses.ascSignName;
+  const ascBody = ASCENDANT_SIGNS[ascSign] ?? fallback(`Ascendant in ${ascSign}`);
   sections.push({
     heading: 'Your Year\'s Approach',
-    subheading: `Solar Return Ascendant in ${ascSign}`,
-    body: ASCENDANT_SIGNS[ascSign] ?? fallback(`Ascendant in ${ascSign}`),
+    subheading: `Solar Return Ascendant in ${ascSign}${noonChart ? ' (approximate)' : ''}`,
+    body: noonChart ? `${ascBody}\n\n(Ascendant may differ — birth time unknown.)` : ascBody,
   });
 
   // ── Section 2: Sun in house ───────────────────────────────────────────────
   const sun = getP('Sun');
+  const sunBody = SUN_IN_HOUSES[sun.house] ?? fallback(`Sun in house ${sun.house}`);
   sections.push({
     heading: 'The Central Focus of Your Year',
-    subheading: `Solar Return Sun in the ${ordinal(sun.house)} House`,
-    body: SUN_IN_HOUSES[sun.house] ?? fallback(`Sun in house ${sun.house}`),
+    subheading: `Solar Return Sun in the ${ordinal(sun.house)} House${noonChart ? ' (approximate)' : ''}`,
+    body: noonChart ? `${sunBody}\n\n(House placement may differ — birth time unknown.)` : sunBody,
   });
 
   // ── Section 3: MC ─────────────────────────────────────────────────────────
   const mcSign = srChart.houses.mcSignName;
+  const mcBody = MC_SIGNS[mcSign] ?? fallback(`MC in ${mcSign}`);
   sections.push({
     heading: 'Career and Public Life',
-    subheading: `Solar Return Midheaven in ${mcSign}`,
-    body: MC_SIGNS[mcSign] ?? fallback(`MC in ${mcSign}`),
+    subheading: `Solar Return Midheaven in ${mcSign}${noonChart ? ' (approximate)' : ''}`,
+    body: noonChart ? `${mcBody}\n\n(Midheaven may differ — birth time unknown.)` : mcBody,
   });
 
   // ── Section 4: Moon in house + sign ───────────────────────────────────────
@@ -191,6 +217,8 @@ export function assembleReport(data: SolarReturnData, personName: string): Repor
     srSunHouse: sun.house,
     srMoonSign: moon.signName,
     srMoonHouse: moon.house,
+    noonChart,
+    branding,
     sections,
     calendarEvents,
   };
