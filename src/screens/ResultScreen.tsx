@@ -1,82 +1,94 @@
-import type { SolarReturnData } from '../engine/types';
+import { useState } from 'react';
+import type { ReportData } from '../report/assembler';
+import { buildPDF } from '../pdf/generator';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
 
 interface Props {
-  data: SolarReturnData;
+  report: ReportData;
   onStartOver: () => void;
 }
 
-export function ResultScreen({ data, onStartOver }: Props) {
+export function ResultScreen({ report, onStartOver }: Props) {
+  const [generating, setGenerating] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleGeneratePDF = async () => {
+    setGenerating(true);
+    setError('');
+    setSaved(false);
+    try {
+      const pdfBytes = await buildPDF(report);
+      const defaultName = `SolarReturn_${report.name}_${report.returnYear}.pdf`;
+      const path = await save({
+        defaultPath: defaultName,
+        filters: [{ name: 'PDF', extensions: ['pdf'] }],
+      });
+      if (path) {
+        await writeFile(path, pdfBytes);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const ordinal = (n: number) => {
+    const s = ['th','st','nd','rd'];
+    const v = n % 100;
+    return n + (s[(v-20)%10] ?? s[v] ?? s[0]);
+  };
+
   return (
     <div>
-      <h2>Solar Return — {data.birthData.name || 'Chart'} ({data.returnYear})</h2>
+      <h2>Solar Return -- {report.name} ({report.returnYear})</h2>
 
-      <h2>Return Moment</h2>
-      <p>UTC: {data.returnDateUTC}</p>
-      <p>Local: {data.returnDateLocal}</p>
+      <div className="pills">
+        <span className="pill">{report.srAscendant} Rising</span>
+        <span className="pill">Sun in {ordinal(report.srSunHouse)}</span>
+        <span className="pill">Moon in {report.srMoonSign} {ordinal(report.srMoonHouse)}</span>
+      </div>
 
-      <h2>SR Chart</h2>
-      <p>Ascendant: {data.srChart.houses.ascSignName} | MC: {data.srChart.houses.mcSignName}</p>
-      <table>
-        <thead>
-          <tr><th>Planet</th><th>Sign</th><th>Degree</th><th>House</th><th>R</th></tr>
-        </thead>
-        <tbody>
-          {data.srChart.planets.map(p => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{p.signName}</td>
-              <td>{p.degree}&deg;{p.minute}'</td>
-              <td>{p.house}</td>
-              <td>{p.retrograde ? 'R' : ''}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <p style={{ color: '#9db4ff', fontSize: 13, margin: '8px 0' }}>
+        {report.returnDateLocal} -- {report.returnLocation}
+      </p>
 
-      <h2>Natal Chart</h2>
-      <p>Ascendant: {data.natalChart.houses.ascSignName} | MC: {data.natalChart.houses.mcSignName}</p>
-      <table>
-        <thead>
-          <tr><th>Planet</th><th>Sign</th><th>Degree</th><th>House</th><th>R</th></tr>
-        </thead>
-        <tbody>
-          {data.natalChart.planets.map(p => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{p.signName}</td>
-              <td>{p.degree}&deg;{p.minute}'</td>
-              <td>{p.house}</td>
-              <td>{p.retrograde ? 'R' : ''}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2>SR/Natal Contacts</h2>
-      <table>
-        <thead>
-          <tr><th>SR Planet</th><th>Aspect</th><th>Natal Point</th><th>Orb</th></tr>
-        </thead>
-        <tbody>
-          {data.srConjunctNatal.map((c, i) => (
-            <tr key={i}>
-              <td>{c.srPlanet}</td>
-              <td>{c.type}</td>
-              <td>{c.natalPoint}</td>
-              <td>{c.orb}&deg;</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2>Year Events (first 30)</h2>
-      <ul>
-        {data.yearEvents.slice(0, 30).map((e, i) => (
-          <li key={i}>{e.date}: {e.description}</li>
+      <h2>Report Contents</h2>
+      <div className="section-list">
+        {report.sections.map((s, i) => (
+          <div key={i} className="section-preview">
+            <strong>{s.heading}</strong>
+            {s.subheading && <span className="sub"> -- {s.subheading}</span>}
+            <p className="preview-text">
+              {s.body.replace(/\*\*/g, '').substring(0, 120)}...
+            </p>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <button onClick={onStartOver}>Start Over</button>
+      <div className="actions">
+        {generating ? (
+          <div className="spinner">
+            <p>Building your report...</p>
+          </div>
+        ) : saved ? (
+          <p style={{ color: '#4ade80', fontSize: 16 }}>Report saved!</p>
+        ) : (
+          <>
+            <button className="primary" onClick={handleGeneratePDF}>
+              Generate PDF Report
+            </button>
+            <button className="secondary" onClick={onStartOver}>
+              Start Over
+            </button>
+          </>
+        )}
+        {error && <p style={{ color: '#ff6b6b', marginTop: 12 }}>{error}</p>}
+      </div>
     </div>
   );
 }

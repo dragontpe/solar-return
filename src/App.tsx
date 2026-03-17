@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { SolarReturnData } from './engine/types';
+import type { ReportData } from './report/assembler';
 import { InputScreen } from './screens/InputScreen';
 import { CalculatingScreen } from './screens/CalculatingScreen';
 import { ResultScreen } from './screens/ResultScreen';
@@ -8,15 +9,18 @@ type Screen = 'input' | 'calculating' | 'result';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('input');
-  const [result, setResult] = useState<SolarReturnData | null>(null);
+  const [srData, setSrData] = useState<SolarReturnData | null>(null);
+  const [report, setReport] = useState<ReportData | null>(null);
 
-  const handleResult = (data: SolarReturnData) => {
-    setResult(data);
+  const handleResult = (data: SolarReturnData, reportData: ReportData) => {
+    setSrData(data);
+    setReport(reportData);
     setScreen('result');
   };
 
   const handleStartOver = () => {
-    setResult(null);
+    setSrData(null);
+    setReport(null);
     setScreen('input');
   };
 
@@ -30,8 +34,8 @@ function App() {
         />
       )}
       {screen === 'calculating' && <CalculatingScreen />}
-      {screen === 'result' && result && (
-        <ResultScreen data={result} onStartOver={handleStartOver} />
+      {screen === 'result' && report && (
+        <ResultScreen report={report} onStartOver={handleStartOver} />
       )}
     </div>
   );

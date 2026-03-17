@@ -13,6 +13,7 @@ body {
 
 h1 {
   margin-bottom: 16px;
+  color: #fff;
 }
 
 h2 {
@@ -51,20 +52,20 @@ button:hover {
   background: #6c44a2;
 }
 
-table {
-  border-collapse: collapse;
-  margin: 8px 0;
+button.primary {
+  background: #533483;
+  margin-right: 12px;
 }
 
-th, td {
-  padding: 4px 12px;
-  border: 1px solid #333;
-  text-align: left;
-  font-size: 13px;
+button.secondary {
+  background: transparent;
+  border: 1px solid #666;
+  color: #ccc;
 }
 
-th {
-  background: #16213e;
+button.secondary:hover {
+  border-color: #999;
+  color: #fff;
 }
 
 .spinner {
@@ -89,4 +90,57 @@ th {
 
 .form-group input {
   width: 160px;
+}
+
+.pills {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #533483;
+  color: #e0c97f;
+}
+
+.section-list {
+  max-height: 380px;
+  overflow-y: auto;
+  margin: 8px 0 16px;
+  padding-right: 8px;
+}
+
+.section-preview {
+  padding: 10px 0;
+  border-bottom: 1px solid #2a2a4e;
+}
+
+.section-preview strong {
+  color: #c4b5fd;
+}
+
+.section-preview .sub {
+  color: #e0c97f;
+  font-size: 13px;
+}
+
+.section-preview .preview-text {
+  color: #888;
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { SolarReturnData } from '../engine/types';
+import type { ReportData } from '../report/assembler';
 import { calculateSolarReturn } from '../engine/index';
+import { assembleReport } from '../report/assembler';
 
 interface Props {
   onCalculating: () => void;
-  onResult: (data: SolarReturnData) => void;
+  onResult: (data: SolarReturnData, report: ReportData) => void;
 }
 
 export function InputScreen({ onCalculating, onResult }: Props) {
@@ -30,7 +32,7 @@ export function InputScreen({ onCalculating, onResult }: Props) {
     onCalculating();
     try {
       const hour = birthHour + birthMinute / 60;
-      const result = await calculateSolarReturn(
+      const srData = await calculateSolarReturn(
         {
           name,
           year: birthYear,
@@ -49,7 +51,8 @@ export function InputScreen({ onCalculating, onResult }: Props) {
         },
         returnYear,
       );
-      onResult(result);
+      const report = assembleReport(srData, name || 'Chart');
+      onResult(srData, report);
     } catch (e) {
       setError(String(e));
     }
