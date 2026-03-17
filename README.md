@@ -4,6 +4,8 @@ A desktop application that calculates personalised solar return (birthday) astro
 
 Built with **Tauri v2 + React + TypeScript + Swiss Ephemeris (WebAssembly)**.
 
+**[Download for macOS (Apple Silicon)](https://github.com/dragontpe/solar-return/releases/latest/download/Solar.Return_0.1.0_aarch64.dmg)**
+
 ![Solar Return App](src-tauri/icons/icon.png)
 
 ## Features

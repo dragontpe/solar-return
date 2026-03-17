@@ -158,6 +158,8 @@ export function InputScreen({ onCalculating, onResult, branding }: Props) {
 
       <button onClick={handleSubmit}>Calculate Solar Return</button>
       {error && <p style={{ color: '#ff6b6b', marginTop: 12 }}>{error}</p>}
+
+      <p className="app-credits">DragonTPE &middot; MIT Licence 2026</p>
     </div>
   );
 }

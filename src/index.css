@@ -247,6 +247,15 @@ button.secondary:hover {
   white-space: nowrap;
 }
 
+.app-credits {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid #2a2a4e;
+  color: #555;
+  font-size: 11px;
+  text-align: center;
+}
+
 .actions {
   margin-top: 16px;
   display: flex;
