@@ -1,5 +1,7 @@
 import { PDFDocument, StandardFonts, rgb, PDFFont, PDFPage } from 'pdf-lib';
-import type { ReportData, ReportSection } from '../report/assembler';
+import type { ReportData } from '../report/assembler';
+import type { ChartData } from '../engine/types';
+import { drawChartWheel, drawChartSidebar } from './chart-wheel';
 
 const COLORS = {
   purple:    rgb(0.357, 0.176, 0.557),
@@ -18,7 +20,8 @@ const BODY_SIZE = 11;
 const BODY_LEADING = 16;
 
 function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number): string[] {
-  const words = text.split(' ');
+  // Replace newlines with spaces — paragraph splitting is handled by the caller
+  const words = text.replace(/\n/g, ' ').split(' ').filter(w => w);
   const lines: string[] = [];
   let current = '';
   for (const word of words) {
@@ -34,7 +37,7 @@ function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: numbe
   return lines;
 }
 
-export async function buildPDF(report: ReportData): Promise<Uint8Array> {
+export async function buildPDF(report: ReportData, srChart?: ChartData): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const helvetica = await pdf.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -103,9 +106,40 @@ export async function buildPDF(report: ReportData): Promise<Uint8Array> {
     size: 10, font: helvetica, color: COLORS.grey,
   });
 
+  // ── Chart wheel page ──────────────────────────────────────────────────────
+
+  if (srChart) {
+    const chartPage = pdf.addPage([PAGE_W, PAGE_H]);
+
+    // Title
+    const chartTitle = 'Solar Return Chart';
+    const ctw = helveticaBold.widthOfTextAtSize(chartTitle, 16);
+    chartPage.drawText(chartTitle, {
+      x: (PAGE_W - ctw) / 2, y: PAGE_H - 40,
+      size: 16, font: helveticaBold, color: COLORS.purple,
+    });
+
+    // Chart wheel — centred on page with room for labels all around
+    const wheelCx = PAGE_W / 2;
+    const wheelCy = PAGE_H / 2 + 60;
+    const wheelR = 175;
+    drawChartWheel(chartPage, srChart, wheelCx, wheelCy, wheelR, helvetica, helveticaBold);
+
+    // Chart data summary below the wheel
+    drawChartSidebar(chartPage, srChart, report, MARGIN, wheelCy - wheelR - 55, helvetica, helveticaBold);
+
+    // Page number
+    const pn = '2';
+    const pnw = helvetica.widthOfTextAtSize(pn, 10);
+    chartPage.drawText(pn, {
+      x: (PAGE_W - pnw) / 2, y: 30,
+      size: 10, font: helvetica, color: COLORS.grey,
+    });
+  }
+
   // ── Report sections ────────────────────────────────────────────────────────
 
-  let pageNum = 1;
+  let pageNum = srChart ? 2 : 1;
   let currentPage = newPage();
   let cursorY = PAGE_H - MARGIN - 30; // below header
 
