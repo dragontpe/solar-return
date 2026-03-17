@@ -3,6 +3,7 @@ import type { SolarReturnData } from '../engine/types';
 import type { ReportData } from '../report/assembler';
 import { calculateSolarReturn } from '../engine/index';
 import { assembleReport } from '../report/assembler';
+import { CitySearch } from '../components/CitySearch';
 
 interface Props {
   onCalculating: () => void;
@@ -91,17 +92,18 @@ export function InputScreen({ onCalculating, onResult }: Props) {
           <input type="number" min={0} max={59} value={birthMinute} onChange={e => setBirthMinute(+e.target.value)} />
         </div>
       </div>
-      <div className="form-row">
+
+      <CitySearch
+        label="Birth City"
+        onSelect={c => { setBirthCity(c.name); setBirthLat(c.lat); setBirthLon(c.lon); setBirthTz(c.tz); }}
+      />
+      <div className="form-row" style={{ marginTop: 4 }}>
         <div className="form-group">
-          <label>Birth City</label>
-          <input value={birthCity} onChange={e => setBirthCity(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Latitude</label>
+          <label>Lat</label>
           <input type="number" step="0.0001" value={birthLat} onChange={e => setBirthLat(+e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Longitude</label>
+          <label>Lon</label>
           <input type="number" step="0.0001" value={birthLon} onChange={e => setBirthLon(+e.target.value)} />
         </div>
         <div className="form-group">
@@ -117,17 +119,18 @@ export function InputScreen({ onCalculating, onResult }: Props) {
           <input type="number" value={returnYear} onChange={e => setReturnYear(+e.target.value)} />
         </div>
       </div>
-      <div className="form-row">
+
+      <CitySearch
+        label="Return City"
+        onSelect={c => { setReturnCity(c.name); setReturnLat(c.lat); setReturnLon(c.lon); setReturnTz(c.tz); }}
+      />
+      <div className="form-row" style={{ marginTop: 4 }}>
         <div className="form-group">
-          <label>Return City</label>
-          <input value={returnCity} onChange={e => setReturnCity(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Latitude</label>
+          <label>Lat</label>
           <input type="number" step="0.0001" value={returnLat} onChange={e => setReturnLat(+e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Longitude</label>
+          <label>Lon</label>
           <input type="number" step="0.0001" value={returnLon} onChange={e => setReturnLon(+e.target.value)} />
         </div>
         <div className="form-group">

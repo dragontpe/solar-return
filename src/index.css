@@ -137,6 +137,54 @@ button.secondary:hover {
   line-height: 1.4;
 }
 
+.city-search {
+  position: relative;
+  margin: 8px 0;
+}
+
+.city-search input {
+  width: 300px;
+}
+
+.city-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 400px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #16213e;
+  border: 1px solid #444;
+  border-radius: 4px;
+  list-style: none;
+  z-index: 100;
+  margin: 2px 0 0;
+}
+
+.city-dropdown li {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.city-dropdown li:hover {
+  background: #533483;
+}
+
+.city-name {
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+.city-meta {
+  color: #888;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .actions {
   margin-top: 16px;
   display: flex;
